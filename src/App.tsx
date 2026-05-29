@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react'
-import { allImages, buildTagIndex } from './lib/images'
+import { useEffect, useMemo, useState } from 'react'
+import { loadImages, buildTagIndex } from './lib/images'
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
 import { MasonryGrid } from './components/MasonryGrid'
 import { Lightbox } from './components/Lightbox'
-import type { SortKey } from './types'
+import type { ImageItem, SortKey } from './types'
 import './App.css'
 
 /** Stable pseudo-shuffle so "Shuffle" doesn't reorder on every keystroke. */
@@ -22,8 +22,24 @@ function App() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [viewer, setViewer] = useState<number | null>(null)
+  const [images, setImages] = useState<ImageItem[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const tagIndex = useMemo(() => buildTagIndex(allImages), [])
+  useEffect(() => {
+    let cancelled = false
+    loadImages()
+      .then((imgs) => {
+        if (!cancelled) setImages(imgs)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const tagIndex = useMemo(() => buildTagIndex(images), [images])
 
   const toggleTag = (tag: string) => {
     setSelected((prev) => {
@@ -38,7 +54,7 @@ function App() {
     const q = query.trim().toLowerCase()
     const tags = Array.from(selected)
 
-    const result = allImages.filter((img) => {
+    const result = images.filter((img) => {
       // Multi-select tags are combined with AND.
       if (tags.length && !tags.every((t) => img.tags.includes(t))) return false
       if (q) {
@@ -63,7 +79,7 @@ function App() {
     })
 
     return result
-  }, [query, selected, sort])
+  }, [query, selected, sort, images])
 
   return (
     <div className="app">
@@ -90,12 +106,20 @@ function App() {
         {sidebarOpen && <div className="scrim" onClick={() => setSidebarOpen(false)} />}
 
         <main className="content">
-          <MasonryGrid
-            items={filtered}
-            selected={selected}
-            onOpen={setViewer}
-            onTag={toggleTag}
-          />
+          {loading ? (
+            <div className="empty">
+              <div className="empty__art">⏳</div>
+              <h3>Loading…</h3>
+              <p>Scanning /images for files.</p>
+            </div>
+          ) : (
+            <MasonryGrid
+              items={filtered}
+              selected={selected}
+              onOpen={setViewer}
+              onTag={toggleTag}
+            />
+          )}
         </main>
       </div>
 

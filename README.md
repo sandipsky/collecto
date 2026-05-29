@@ -28,9 +28,16 @@ The file name (minus extension) is split on `_` to produce **tags**. For example
 sidebar as colored chips with a count; each tag's color is derived deterministically
 from its name.
 
-The dev server watches `public/images/` — adding or removing files reloads the gallery
-automatically. (Discovery happens in the small Vite plugin in `vite-plugin-images.ts`,
-exposed to the app as the `virtual:images` module.)
+A trailing purely-numeric segment is treated as a counter and **dropped**, so
+`a_b_c_1.jpg` and `a_b_c_2.jpg` both produce the tag set `{a, b, c}` instead of
+spawning a new `1` / `2` tag for each file.
+
+### Dynamic discovery (no rebuild needed)
+
+Image discovery happens at **runtime** by fetching JSON directory listings from
+`/images/`. In dev, `vite-plugin-images.ts` serves those listings; in production,
+nginx serves them via `autoindex_format json`. Drop files into the served
+`images/` folder and refresh — they appear without rebuilding the bundle.
 
 ## Features
 
