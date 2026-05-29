@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="460" viewBox="0 0 600 460">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6b7d3a"/>
+      <stop offset="1" stop-color="#9caf5e"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="460" fill="url(#g)"/>
+  <circle cx="468" cy="101.2" r="128.8" fill="#ffffff" opacity="0.10"/>
+  <circle cx="120" cy="368" r="156.4" fill="#000000" opacity="0.08"/>
+  <text x="300" y="230" fill="#ffffff" opacity="0.92" font-family="system-ui, sans-serif"
+    font-size="37" font-weight="700" text-anchor="middle"
+    dominant-baseline="middle" style="letter-spacing:.5px">olive slide sandals</text>
+</svg>

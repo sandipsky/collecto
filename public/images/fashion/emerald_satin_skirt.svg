@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="880" viewBox="0 0 600 880">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f6b3a"/>
+      <stop offset="1" stop-color="#3fa066"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="880" fill="url(#g)"/>
+  <circle cx="468" cy="193.6" r="168.00000000000003" fill="#ffffff" opacity="0.10"/>
+  <circle cx="120" cy="704" r="204.00000000000003" fill="#000000" opacity="0.08"/>
+  <text x="300" y="440" fill="#ffffff" opacity="0.92" font-family="system-ui, sans-serif"
+    font-size="37" font-weight="700" text-anchor="middle"
+    dominant-baseline="middle" style="letter-spacing:.5px">emerald satin skirt</text>
+</svg>
