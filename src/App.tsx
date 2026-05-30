@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { loadImages, buildTagIndex } from './lib/images'
+import { loadImages, buildTagIndex, compareNames } from './lib/images'
 import { useTheme } from './hooks/useTheme'
 import { Sidebar } from './components/Sidebar'
 import { Topbar } from './components/Topbar'
@@ -67,14 +67,14 @@ function App() {
     result.sort((a, b) => {
       switch (sort) {
         case 'name-desc':
-          return b.name.localeCompare(a.name)
+          return compareNames(b.name, a.name)
         case 'tags-desc':
-          return b.tags.length - a.tags.length || a.name.localeCompare(b.name)
+          return b.tags.length - a.tags.length || compareNames(a.name, b.name)
         case 'random':
           return seededOrder(a.name) - seededOrder(b.name)
         case 'name-asc':
         default:
-          return a.name.localeCompare(b.name)
+          return compareNames(a.name, b.name)
       }
     })
 

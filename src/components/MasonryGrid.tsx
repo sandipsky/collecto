@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ImageItem } from '../types'
 
 interface Props {
@@ -8,6 +9,10 @@ interface Props {
 }
 
 export function MasonryGrid({ items, selected, onOpen, onTag }: Props) {
+  // Track which sources are landscape-oriented so their card spans 2 columns.
+  // Determined from naturalWidth/naturalHeight once the image actually loads.
+  const [wide, setWide] = useState<Set<string>>(new Set())
+
   if (items.length === 0) {
     return (
       <div className="empty">
@@ -18,11 +23,33 @@ export function MasonryGrid({ items, selected, onOpen, onTag }: Props) {
     )
   }
 
+  const onImgLoad = (src: string) => (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget
+    if (naturalWidth > naturalHeight) {
+      setWide((prev) => {
+        if (prev.has(src)) return prev
+        const next = new Set(prev)
+        next.add(src)
+        return next
+      })
+    }
+  }
+
   return (
     <div className="masonry">
       {items.map((img, i) => (
-        <figure className="card" key={img.src} onClick={() => onOpen(i)}>
-          <img className="card__img" src={img.src} alt={img.name} loading="lazy" />
+        <figure
+          className={`card${wide.has(img.src) ? ' card--wide' : ''}`}
+          key={img.src}
+          onClick={() => onOpen(i)}
+        >
+          <img
+            className="card__img"
+            src={img.src}
+            alt={img.name}
+            loading="lazy"
+            onLoad={onImgLoad(img.src)}
+          />
           <figcaption className="card__overlay">
             <div className="card__tags">
               {img.tags.map((t) => (

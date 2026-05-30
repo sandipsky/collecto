@@ -17,6 +17,10 @@ export function tagHue(tag: string): number {
   return hash(tag) % 360
 }
 
+/** Natural-order comparator so `_2` sorts before `_10`. */
+const NATURAL = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+export const compareNames = (a: string, b: string) => NATURAL.compare(a, b)
+
 interface DirEntry {
   name: string
   type: 'file' | 'directory'
@@ -76,7 +80,7 @@ function parse(src: string): ImageItem {
 /** Discover images by recursively walking the /images/ directory at runtime. */
 export async function loadImages(): Promise<ImageItem[]> {
   const urls = await scan('/images/')
-  urls.sort((a, b) => a.localeCompare(b))
+  urls.sort(compareNames)
   return urls.map(parse)
 }
 
