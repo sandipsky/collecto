@@ -22,6 +22,7 @@ const RESET: View = { scale: 1, x: 0, y: 0 }
 export function Lightbox({ items, index, onClose, onIndex }: Props) {
   const item = items[index]
   const stageRef = useRef<HTMLDivElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
   const [view, setView] = useState<View>(RESET)
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null)
   const [dragging, setDragging] = useState(false)
@@ -33,6 +34,23 @@ export function Lightbox({ items, index, onClose, onIndex }: Props) {
     setShownIndex(index)
     setView(RESET)
   }
+
+  // Constrain pan so the image edges can never detach from the viewport edges.
+  // With transform-origin at center, translate(0,0) is centered; the furthest we
+  // can pan in each axis is half the scaled overflow. When the scaled image is
+  // smaller than the stage in an axis, there's no overflow, so it stays centered.
+  const clamp = useCallback((v: View): View => {
+    const stage = stageRef.current
+    const img = imgRef.current
+    if (!stage || !img) return v
+    const maxX = Math.max(0, (img.offsetWidth * v.scale - stage.clientWidth) / 2)
+    const maxY = Math.max(0, (img.offsetHeight * v.scale - stage.clientHeight) / 2)
+    return {
+      scale: v.scale,
+      x: Math.max(-maxX, Math.min(maxX, v.x)),
+      y: Math.max(-maxY, Math.min(maxY, v.y)),
+    }
+  }, [])
 
   const prev = useCallback(() => {
     onIndex((index - 1 + items.length) % items.length)
@@ -83,13 +101,13 @@ export function Lightbox({ items, index, onClose, onIndex }: Props) {
         // Keep the point under the cursor fixed while zooming.
         const x = sx - (scale / v.scale) * (sx - v.x)
         const y = sy - (scale / v.scale) * (sy - v.y)
-        return { scale, x, y }
+        return clamp({ scale, x, y })
       })
     }
 
     stage.addEventListener('wheel', onWheel, { passive: false })
     return () => stage.removeEventListener('wheel', onWheel)
-  }, [])
+  }, [clamp])
 
   const onPointerDown = (e: React.PointerEvent) => {
     if (view.scale <= MIN) return
@@ -109,7 +127,7 @@ export function Lightbox({ items, index, onClose, onIndex }: Props) {
     // or a racing pointerup (which nulls drag.current) would throw mid-render.
     const x = d.ox + (e.clientX - d.x)
     const y = d.oy + (e.clientY - d.y)
-    setView((v) => ({ ...v, x, y }))
+    setView((v) => clamp({ ...v, x, y }))
   }
 
   const endDrag = () => {
@@ -128,7 +146,7 @@ export function Lightbox({ items, index, onClose, onIndex }: Props) {
     const sx = e.clientX - (rect.left + rect.width / 2)
     const sy = e.clientY - (rect.top + rect.height / 2)
     const scale = 2.5
-    setView({ scale, x: sx - scale * sx, y: sy - scale * sy })
+    setView(clamp({ scale, x: sx - scale * sx, y: sy - scale * sy }))
   }
 
   if (!item) return null
@@ -182,6 +200,7 @@ export function Lightbox({ items, index, onClose, onIndex }: Props) {
         style={{ cursor: view.scale > MIN ? (dragging ? 'grabbing' : 'grab') : 'auto' }}
       >
         <img
+          ref={imgRef}
           className="lb__img"
           src={item.src}
           alt={item.name}
